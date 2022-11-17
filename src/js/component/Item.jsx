@@ -1,25 +1,50 @@
-import React from "react";
+import React, {useState} from "react";
 import PropTypes from "prop-types";
 
-const Item = ({toDo, list, handleAddToList}) => {
-
-    const handleRemoveButton = () => {
-        handleAddToList(list.filter(item => item.id !== toDo.id))
+const Item = ({list, handleAddToList, url}) => {
+    const [inputValue, setInputValue] = useState("");
+    const newItem = (value) => {
+        return {
+            label: value, 
+            done: false
+        }
     }
 
-    return (
-        <div className="todoitem">
-            <div>
-            {toDo.string} 
+    const handleKeyDown = async(e) => {
+        if(e.key === 'Enter' && inputValue !== '')
+        {
+            const item = newItem(inputValue)
+            const newTodoList = [...list, item]
+            handleAddToList(newTodoList) 
+
+            fetch(url,{
+                method: 'PUT',
+                body: JSON.stringify(newTodoList),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log(response.status);
+                return response;
+            })
+            .catch(error => {
+                console.log(error)
+            })
             
-            <button 
-            onClick={handleRemoveButton} 
-            type="button" 
-            aria-label="Close">
-                Delete
-            </button>
-        </div>
-        </div>
+            setInputValue('')
+        }
+    }
+
+    
+    return (
+        <input
+        type="text"
+        placeholder="What needs to be done?"
+        onChange={(e) => setInputValue(e.target.value)}
+        value={inputValue}
+        onKeyDown={handleKeyDown}
+      />
 
     )
 }
